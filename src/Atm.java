@@ -1,10 +1,8 @@
-package com.oportune.intelizest.atm;
-
 import java.util.*;
 
 public class Atm {
-  private static final List<Integer> currencies = new ArrayList();
-  private static final Map<Integer, Integer> availableCurrency = new HashMap();
+  private static final List<Integer> currencies = new ArrayList<>();
+  private static final Map<Integer, Integer> availableCurrency = new HashMap<>();
   private static int balance = 0;
   private static final Scanner scanner = new Scanner(System.in);
 
@@ -30,16 +28,17 @@ public class Atm {
 
   private static void initializeAtm() {
     initializeCurrency();
-    initializeCurrencyCalculator(currencies);
+    initializeCurrencyCalculator();
   }
 
-  private static void initializeCurrencyCalculator(List<Integer> currencies) {
+  private static void initializeCurrencyCalculator() {
     for (Integer eachCurrency : currencies) {
       availableCurrency.put(eachCurrency, 0);
     }
   }
 
   private static void initializeCurrency() {
+    currencies.add(50);
     currencies.add(20);
     currencies.add(10);
     currencies.add(5);
