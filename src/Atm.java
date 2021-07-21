@@ -38,7 +38,6 @@ public class Atm {
   }
 
   private static void initializeCurrency() {
-    currencies.add(50);
     currencies.add(20);
     currencies.add(10);
     currencies.add(5);
@@ -51,10 +50,7 @@ public class Atm {
     int amountToWithdraw = scanner.nextInt();
     if (validWithdrawalAmount(amountToWithdraw)) {
       withdrawAndReconcile(amountToWithdraw);
-      System.out.println("Please collect the money and card");
       printBalance();
-    } else {
-      System.out.println("Please enter the valid amount");
     }
   }
 
@@ -69,24 +65,43 @@ public class Atm {
 
   private static void currencyReconcile(int amountToWithdraw) {
     int remaining = amountToWithdraw;
+    Map<Integer, Integer> dispensedCurrency = new HashMap<>();
     for (int currency : currencies) {
       if (availableCurrency.get(currency) > 0 && remaining > 0) {
         int currencyCount = remaining / currency;
         if (availableCurrency.get(currency) - currencyCount < 0) {
           remaining = remaining - (currency * availableCurrency.get(currency));
           availableCurrency.put(currency, 0);
+          dispensedCurrency.put(currency, availableCurrency.get(currency));
         } else {
           remaining = remaining - (currency * currencyCount);
           availableCurrency.put(currency, availableCurrency.get(currency) - currencyCount);
+          dispensedCurrency.put(currency, currencyCount);
         }
       }
     }
+    printDispensedCurrency(dispensedCurrency, amountToWithdraw);
+    System.out.println("\nPlease collect the money and card");
+  }
+
+  private static void printDispensedCurrency(Map<Integer, Integer> dispensedCurrency, int amount) {
+    System.out.print("Dispensed:");
+    for (Map.Entry<Integer, Integer> currency : dispensedCurrency.entrySet()) {
+      System.out.print("  $" + currency.getKey() + "'s= " + currency.getValue() + ", ");
+    }
+    System.out.print("Total= " + amount);
   }
 
   private static boolean validWithdrawalAmount(int amountToWithdraw) {
-    return amountToWithdraw > 0
-        && amountToWithdraw <= balance
-        && validateAgainstCurrency(amountToWithdraw);
+    if (amountToWithdraw <= 0 || amountToWithdraw > balance) {
+      System.out.println("Incorrect or insufficient funds");
+      return false;
+    }
+    if (!validateAgainstCurrency(amountToWithdraw)) {
+      System.out.println("Requested withdraw amount is not dispensable");
+      return false;
+    }
+    return true;
   }
 
   private static boolean validateAgainstCurrency(int amountToWithdraw) {
@@ -109,8 +124,7 @@ public class Atm {
     int amountToDeposit = scanner.nextInt();
     if (validAmountToDeposit(amountToDeposit)) {
       Map<Integer, Integer> userTempCurrencies = getCurrencyDetails();
-      boolean isValid = validateCurrencies(amountToDeposit, userTempCurrencies);
-      if (isValid) {
+      if (validateCurrencies(amountToDeposit, userTempCurrencies)) {
         updateAvailableBalance(amountToDeposit);
         updateAvailableCurrency(userTempCurrencies);
         System.out.println("Amount deposited successfully");
@@ -129,10 +143,11 @@ public class Atm {
   }
 
   private static void printBalance() {
-    System.out.println("Total Balance in ATM: " + balance);
+    System.out.print("Balance:");
     for (Map.Entry<Integer, Integer> currency : availableCurrency.entrySet()) {
-      System.out.println("Available $" + currency.getKey() + "'s: " + currency.getValue());
+      System.out.print("  $" + currency.getKey() + "'s= " + currency.getValue() + ", ");
     }
+    System.out.println("Total= " + balance);
   }
 
   private static void updateAvailableCurrency(Map<Integer, Integer> userTempCurrencies) {
@@ -153,19 +168,15 @@ public class Atm {
       return false;
     }
     if (!validateCurrencyAgainstTotal(amountToDeposit, userTempCurrencies)) {
-      System.out.println("Total amount is not matching with currency entered");
+      System.out.println("Incorrect amount or currency");
       return false;
     }
     return true;
   }
 
   private static boolean validAmountToDeposit(int amountToDeposit) {
-    if (validateDepositAmountNegative(amountToDeposit)) {
+    if (amountToDeposit <= 0) {
       System.out.println("Incorrect deposit amount");
-      return false;
-    }
-    if (validateDepositAmountZero(amountToDeposit)) {
-      System.out.println("Deposit amount cannot be zero");
       return false;
     }
     return true;
@@ -176,14 +187,6 @@ public class Atm {
       if (currency.getValue() < 0) return true;
     }
     return false;
-  }
-
-  private static boolean validateDepositAmountZero(int amountToDeposit) {
-    return amountToDeposit == 0;
-  }
-
-  private static boolean validateDepositAmountNegative(int amountToDeposit) {
-    return (amountToDeposit < 0);
   }
 
   private static boolean validateCurrencyAgainstTotal(
