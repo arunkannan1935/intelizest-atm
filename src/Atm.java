@@ -71,12 +71,12 @@ public class Atm {
         int currencyCount = remaining / currency;
         if (availableCurrency.get(currency) - currencyCount < 0) {
           remaining = remaining - (currency * availableCurrency.get(currency));
-          availableCurrency.put(currency, 0);
           dispensedCurrency.put(currency, availableCurrency.get(currency));
+          availableCurrency.put(currency, 0);
         } else {
           remaining = remaining - (currency * currencyCount);
           availableCurrency.put(currency, availableCurrency.get(currency) - currencyCount);
-          dispensedCurrency.put(currency, currencyCount);
+          if (currencyCount > 0) dispensedCurrency.put(currency, currencyCount);
         }
       }
     }
@@ -86,8 +86,9 @@ public class Atm {
 
   private static void printDispensedCurrency(Map<Integer, Integer> dispensedCurrency, int amount) {
     System.out.print("Dispensed:");
-    for (Map.Entry<Integer, Integer> currency : dispensedCurrency.entrySet()) {
-      System.out.print("  $" + currency.getKey() + "'s= " + currency.getValue() + ", ");
+    for (int currency : currencies) {
+      if (dispensedCurrency.get(currency) != null && dispensedCurrency.get(currency) != 0)
+        System.out.print("  $" + currency + "'s= " + dispensedCurrency.get(currency) + ", ");
     }
     System.out.print("Total= " + amount);
   }
@@ -144,8 +145,8 @@ public class Atm {
 
   private static void printBalance() {
     System.out.print("Balance:");
-    for (Map.Entry<Integer, Integer> currency : availableCurrency.entrySet()) {
-      System.out.print("  $" + currency.getKey() + "'s= " + currency.getValue() + ", ");
+    for (int currency : currencies) {
+      System.out.print("  $" + currency + "'s= " + availableCurrency.get(currency) + ", ");
     }
     System.out.println("Total= " + balance);
   }
